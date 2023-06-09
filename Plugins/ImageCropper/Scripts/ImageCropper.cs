@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 using ImageCropperNamespace;
 using System.Collections;
@@ -51,15 +51,33 @@ public class ImageCropper : MonoBehaviour
 	public delegate void ImageResizePolicy( ref int width, ref int height );
 
 	private static ImageCropper m_instance = null;
+	private static Object m_resource = null;
+	
 	public static ImageCropper Instance
 	{
 		get
 		{
 			if( m_instance == null )
-				m_instance = Instantiate( Resources.Load<ImageCropper>( "ImageCropper" ) );
+			{
+				if(m_resource == null)
+					m_resource = Resources.Load<ImageCropper>( "ImageCropper" );
+				
+				m_instance = Instantiate( m_resource as ImageCropper);
+			}
 
 			return m_instance;
 		}
+	}
+	
+	internal static void Release()
+	{
+		if(m_instance != null)
+			Destroy(m_instance.gameObject);
+		
+		m_instance = null;
+		m_resource = null;
+		
+		Resources.UnloadUnusedAssets();
 	}
 
 #pragma warning disable 0649
@@ -266,12 +284,27 @@ public class ImageCropper : MonoBehaviour
 
 		gameObject.SetActive( false );
 	}
-
+	
+	private void OnEnable()
+	{
+		CancelInvoke();
+	}
+	
 	private void OnDisable()
 	{
+		if(autoZoomCoroutine != null)
+			StartCoroutine(autoZoomCoroutine);
+		
 		autoZoomCoroutine = null;
+		Invoke("Clear", 10f);
 	}
-
+	
+	private void Clear()
+	{
+		viewportSizeChangeListener.onSizeChanged = null;
+		ImageCropper.Release();
+	}
+	
 	private void LateUpdate()
 	{
 		if( gameObject.activeInHierarchy )
