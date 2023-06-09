@@ -296,7 +296,7 @@ public class ImageCropper : MonoBehaviour
 			StartCoroutine(autoZoomCoroutine);
 		
 		autoZoomCoroutine = null;
-		Invoke("Clear", 10f);
+		Invoke("Clear", 60f);
 	}
 	
 	private void Clear()
