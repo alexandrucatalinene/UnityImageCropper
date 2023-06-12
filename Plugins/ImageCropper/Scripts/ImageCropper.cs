@@ -49,6 +49,7 @@ public class ImageCropper : MonoBehaviour
 
 	public delegate void CropResult( bool result, Texture originalImage, Texture2D croppedImage );
 	public delegate void ImageResizePolicy( ref int width, ref int height );
+    public static string PrefabName = "ImageCropper";
 
 	private static ImageCropper m_instance = null;
 	private static Object m_resource = null;
@@ -60,7 +61,7 @@ public class ImageCropper : MonoBehaviour
 			if( m_instance == null )
 			{
 				if(m_resource == null)
-					m_resource = Resources.Load<ImageCropper>( "ImageCropper" );
+					m_resource = Resources.Load<ImageCropper>( PrefabName );
 				
 				m_instance = Instantiate( m_resource as ImageCropper);
 			}
