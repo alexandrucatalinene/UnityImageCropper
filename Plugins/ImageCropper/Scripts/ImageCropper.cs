@@ -268,6 +268,8 @@ public class ImageCropper : MonoBehaviour
 	private float minAspectRatio, maxAspectRatio;
 	private float minImageScale;
 
+ 	private Settings m_currentSettings = settings;
+
 	private void Awake()
 	{
 		if( m_instance == null )
@@ -301,6 +303,7 @@ public class ImageCropper : MonoBehaviour
 		
 		autoZoomCoroutine = null;
 		Invoke("Clear", 60f);
+  		m_currentSettings = null;
 	}
 	
 	private void Clear()
@@ -356,18 +359,19 @@ public class ImageCropper : MonoBehaviour
 		if( settings == null )
 			settings = DefaultSettings;
 
+   		m_currentSettings = settings;
 		m_orientedImage.texture = image;
 
 		m_originalImageSize = new Vector2( image.width, image.height );
 		orientedImageTransform.sizeDelta = m_originalImageSize;
 
-		MarkTextureNonReadable = settings.markTextureNonReadable;
-		OvalSelection = settings.ovalSelection;
-		GuidelinesVisibility = settings.guidelinesVisibility;
-		ImageBackground = settings.imageBackground;
+		MarkTextureNonReadable = m_currentSettings.markTextureNonReadable;
+		OvalSelection = m_currentSettings.ovalSelection;
+		GuidelinesVisibility = m_currentSettings.guidelinesVisibility;
+		ImageBackground = m_currentSettings.imageBackground;
 
-		minAspectRatio = settings.selectionMinAspectRatio;
-		maxAspectRatio = settings.selectionMaxAspectRatio;
+		minAspectRatio = m_currentSettings.selectionMinAspectRatio;
+		maxAspectRatio = m_currentSettings.selectionMaxAspectRatio;
 
 		if( minAspectRatio <= 0f )
 			minAspectRatio = 1E-6f;
@@ -381,8 +385,8 @@ public class ImageCropper : MonoBehaviour
 			maxAspectRatio = temp;
 		}
 
-		minSize = settings.selectionMinSize;
-		maxSize = settings.selectionMaxSize;
+		minSize = m_currentSettings.selectionMinSize;
+		maxSize = m_currentSettings.selectionMaxSize;
 
 		Vector2 maxSizeDefault = new Vector2( 2f, 2f ) * Mathf.Max( m_originalImageSize.x, m_originalImageSize.y );
 		if( minSize.x < 1f || minSize.y < 1f )
@@ -394,10 +398,10 @@ public class ImageCropper : MonoBehaviour
 		maxSize = maxSize.ClampBetween( minSize, maxSizeDefault );
 
 		m_autoZoomEnabled = false;
-		SetOrientation( settings.initialOrientation );
+		SetOrientation( m_currentSettings.initialOrientation );
 
-		m_autoZoomEnabled = settings.autoZoomEnabled;
-		m_pixelPerfectSelection = settings.pixelPerfectSelection;
+		m_autoZoomEnabled = m_currentSettings.autoZoomEnabled;
+		m_pixelPerfectSelection = m_currentSettings.pixelPerfectSelection;
 
 		flipHorizontalButton.SetActive( ( settings.visibleButtons & Button.FlipHorizontal ) == Button.FlipHorizontal );
 		flipVerticalButton.SetActive( ( settings.visibleButtons & Button.FlipVertical ) == Button.FlipVertical );
@@ -474,11 +478,10 @@ public class ImageCropper : MonoBehaviour
 		return CropSelection( width, height );
 	}
 
-	public Texture2D CropSelection( int width, int height, Settings settings = null)
+	public Texture2D CropSelection( int width, int height)
 	{
- 
- 		if( settings == null )
-			settings = DefaultSettings;
+ 		if( m_currentSettings == null )
+			m_currentSettings = DefaultSettings;
  
 		if( !gameObject.activeInHierarchy )
 		{
@@ -559,7 +562,7 @@ public class ImageCropper : MonoBehaviour
 			cropRenderCamera.Render();
 
 			result = new Texture2D( width, height, transparentBackground ? TextureFormat.RGBA32 : TextureFormat.RGB24, false );
-   			result.filterMode = settings.textureFilterType switch
+   			result.filterMode = m_currentSettings.textureFilterType switch
       			{
 	 			CropTextureFilterType.KeepOriginal => m_orientedImage.texture.filterMode,
      				CropTextureFilterType.ForcePoint => FilterMode.Point,
