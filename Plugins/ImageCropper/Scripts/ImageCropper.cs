@@ -268,7 +268,7 @@ public class ImageCropper : MonoBehaviour
 	private float minAspectRatio, maxAspectRatio;
 	private float minImageScale;
 
- 	private Settings m_currentSettings = settings;
+ 	private Settings m_currentSettings = null;
 
 	private void Awake()
 	{
