@@ -34,7 +34,10 @@ public class ImageCropper : MonoBehaviour
 		public float selectionInitialPaddingTop = 0.1f;
 		public float selectionInitialPaddingRight = 0.1f;
 		public float selectionInitialPaddingBottom = 0.1f;
+  		public CropTextureFilterType textureFilterType = CropTextureFilterType.KeepOriginal;
 	}
+
+ 	public enum CropTextureFilterType { KeepOriginal, ForcePoint, ForceBilinear, ForceTrilinear};
 
 	[System.Flags]
 	public enum Direction { None = 0, Left = 1, Top = 2, Right = 4, Bottom = 8 };
@@ -471,8 +474,12 @@ public class ImageCropper : MonoBehaviour
 		return CropSelection( width, height );
 	}
 
-	public Texture2D CropSelection( int width, int height )
+	public Texture2D CropSelection( int width, int height, Settings settings = null)
 	{
+ 
+ 		if( settings == null )
+			settings = DefaultSettings;
+ 
 		if( !gameObject.activeInHierarchy )
 		{
 			Debug.LogError( "Cropper is not visible!" );
@@ -552,6 +559,13 @@ public class ImageCropper : MonoBehaviour
 			cropRenderCamera.Render();
 
 			result = new Texture2D( width, height, transparentBackground ? TextureFormat.RGBA32 : TextureFormat.RGB24, false );
+   			result.filterMode = settings.textureFilterType switch
+      			{
+	 			CropTextureFilterType.KeepOriginal => m_orientedImage.texture.filterMode,
+     				CropTextureFilterType.ForcePoint => FilterMode.Point,
+	 			CropTextureFilterType.ForceBilinear => FilterMode.Bilinear,
+     				CropTextureFilterType.ForceTrilinear => FilterMode.Trilinear,
+			};
 			result.ReadPixels( new Rect( 0, 0, width, height ), 0, 0, false );
 			result.Apply( false, MarkTextureNonReadable );
 		}
